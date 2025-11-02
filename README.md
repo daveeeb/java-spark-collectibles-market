@@ -1,12 +1,12 @@
 Java Spark for web apps
 
-## API Endpoints
+## User Management (API Endpoints)
 
-| Método | Ruta | Función |
+| Method | Route | Function |
 | :---: | :---: | :--- |
-| **GET** | `/users` | Devuelve todos los usuarios |
-| **GET** | `/users/:id` | Devuelve un usuario específico |
-| **POST** | `/users/:id` | Agrega un nuevo usuario |
-| **PUT** | `/users/:id` | Actualiza un usuario existente |
-| **OPTIONS** | `/users/:id` | Verifica si existe el usuario |
-| **DELETE** | `/users/:id` | Elimina un usuario |
+| **GET** | `/users` | Returns all users |
+| **GET** | `/users/:id` | Returns a specific user |
+| **POST** | `/users/:id` | Adds a new user |
+| **PUT** | `/users/:id` | Updates an existing user |
+| **OPTIONS** | `/users/:id` | Verifies if the user exists |
+| **DELETE** | `/users/:id` | Deletes a user |

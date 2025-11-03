@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Collectibles Market</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Artículos en Venta</h1>
+        <table id="item-list-table">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Precio</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#items}}
+                <tr>
+                    <td><a href="/items/{{id}}" class="item-name-link">{{name}}</a></td>
+                    <td>{{price}}</td>
+                </tr>
+                {{/items}}
+            </tbody>
+        </table>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/script.js"></script>
+</body>
+</html>

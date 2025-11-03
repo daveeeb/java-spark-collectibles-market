@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{{name}}</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="container">
+    <h1 class="detail-name">{{name}}</h1>
+    <p class="detail-price">{{price}}</p>
+    <p class="detail-description">{{description}}</p>
+
+    <button class="offer-btn" style="padding: 10px; background: #007bff; color: white; border: none; cursor: pointer;">
+        Hacer Oferta
+    </button>
+
+    <form id="offer-form" style="display: none; margin-top: 20px;">
+        <input type="hidden" id="item-id" value="{{id}}">
+        <div class="form-item">
+            <label class="form-label">Nombre</label>
+            <input type="text" id="name-input" class="form-input" required>
+        </div>
+        <div class="form-item">
+            <label class="form-label">Email</label>
+            <input type="email" id="email-input" class="form-input" required>
+        </div>
+        <div class="form-item">
+            <label class="form-label">Monto de oferta (USD)</label>
+            <input type="number" step="0.01" id="amount-input" class="form-input" required>
+        </div>
+        <button type="submit" class="form-button">Enviar Oferta</button>
+    </form>
+
+    <a href="/" class="back-link">Volver a la lista</a>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="/script.js"></script>
+<script>
+    $(document).ready(function() {
+        const itemId = $("#item-id").val();
+
+        $("#offer-form").submit(function(event) {
+            event.preventDefault();
+            const name = $("#name-input").val();
+            const email = $("#email-input").val();
+            const amount = parseFloat($("#amount-input").val()).toFixed(2);
+
+            $.ajax({
+                url: "/api/offer",
+                method: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({
+                    name: name,
+                    email: email,
+                    id: itemId,
+                    amount: parseFloat(amount)
+                }),
+                success: function() {
+                    alert("¡Oferta enviada!");
+                    $("#offer-form").trigger("reset").hide();
+                },
+                error: function() {
+                    alert("Error al enviar oferta");
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>

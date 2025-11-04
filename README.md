@@ -105,3 +105,5 @@ In the other one try:
 ~~~
 API Endpoint: http://localhost:4567/items
 ~~~
+
+<img width="1902" height="869" alt="image" src="https://github.com/user-attachments/assets/eb2e2536-9a54-4101-a6d8-b4517b29fffa" />

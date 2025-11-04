@@ -1,31 +1,45 @@
-<!DOCTYPE html>
-<html lang="es">
+<!doctype html>
+<html>
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8">
     <title>Collectibles Market</title>
     <link rel="stylesheet" href="/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/4.2.0/mustache.min.js"></script>
 </head>
 <body>
-    <div class="container">
-        <h1>Artículos en Venta</h1>
-        <table id="item-list-table">
-            <thead>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Precio</th>
-                </tr>
-            </thead>
-            <tbody>
-                {{#items}}
-                <tr>
-                    <td><a href="/items/{{id}}" class="item-name-link">{{name}}</a></td>
-                    <td>{{price}}</td>
-                </tr>
-                {{/items}}
-            </tbody>
-        </table>
+<div class="container">
+    <h1>Collectibles Market</h1>
+
+    <div class="form-container">
+        <form id="filter-form">
+            <label>Min price (USD)</label>
+            <input id="min-price" name="min_price" type="number" step="0.01" placeholder="0">
+            <label>Max price (USD)</label>
+            <input id="max-price" name="max_price" type="number" step="0.01" placeholder="1000">
+            <button class="btn" type="submit">Filter</button>
+            <button id="clear-filter" class="btn" type="button">Clear</button>
+        </form>
     </div>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="/script.js"></script>
+
+    <div id="item-list" class="item-list">
+        {{#items}}
+            <div class="item" onclick="location.href='/items/{{id}}'">
+                <h3>{{name}}</h3>
+                <p id="price-{{id}}" class="item-price">{{price}}</p>
+            </div>
+        {{/items}}
+    </div>
+</div>
+
+<!-- Template for rendering via JS -->
+<script id="item-template" type="x-tmpl-mustache">
+    <div class="item" data-id="{{id}}">
+      <h3>{{name}}</h3>
+      <p id="price-{{id}}" class="item-price">{{price}}</p>
+    </div>
+</script>
+
+<script src="/script.js"></script>
 </body>
 </html>

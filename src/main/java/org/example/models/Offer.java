@@ -1,51 +1,25 @@
 package org.example.models;
 
 public class Offer {
-
-    private String name;
-    private String email;
     private String id; // item id
     private double amount;
+    private String buyer;
 
-    public Offer() {
-    }
+    public Offer() {}
 
-    public Offer(double amount, String id, String email, String name) {
-        this.amount = amount;
+    public Offer(String id, double amount, String buyer) {
         this.id = id;
-        this.email = email;
-        this.name = name;
-    }
-
-    public double getAmount() {
-        return amount;
-    }
-
-    public void setAmount(double amount) {
         this.amount = amount;
+        this.buyer = buyer;
     }
 
-    public String getEmail() {
-        return email;
-    }
+    // getters y setters
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+    public double getAmount() { return amount; }
+    public void setAmount(double amount) { this.amount = amount; }
 
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
+    public String getBuyer() { return buyer; }
+    public void setBuyer(String buyer) { this.buyer = buyer; }
 }

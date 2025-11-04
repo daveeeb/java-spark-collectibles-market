@@ -20,11 +20,9 @@ public class App {
         staticFiles.location("/public");
         loadItems();
 
-        // Registrar WebSocket (handler con anotaciones Jetty)
         webSocket("/ws", PriceWebSocketHandler.class);
-        init(); // iniciar Spark (necesario cuando se usan websockets)
+        init();
 
-        // Manejo de errores
         notFound((req, res) -> {
             res.type("application/json");
             return gson.toJson(Map.of("error", "404"));
@@ -34,7 +32,6 @@ public class App {
             return gson.toJson(Map.of("error", "500"));
         });
 
-        // API: obtener items (con filtrado por rango de precio)
         get("/items", (req, res) -> {
             res.type("application/json");
             String minStr = req.queryParams("min_price");

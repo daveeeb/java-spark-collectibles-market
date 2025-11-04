@@ -4,9 +4,7 @@ public class Item {
     private String id;
     private String name;
     private String description;
-    private String price; // formato: "$123.45 USD"
-
-    public Item() {}
+    private String price;
 
     public Item(String id, String name, String description, String price) {
         this.id = id;
@@ -15,7 +13,6 @@ public class Item {
         this.price = price;
     }
 
-    // getters y setters
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 

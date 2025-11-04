@@ -1,34 +1,66 @@
-<!doctype html>
-<html>
+<!-- src/main/resources/public/item-detail.mustache -->
+<!DOCTYPE html>
+<html lang="es">
 <head>
-    <meta charset="utf-8">
-    <title>{{name}}</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{name}} - Subasta</title>
     <link rel="stylesheet" href="/style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 </head>
 <body>
 <div class="container">
-    <h1>{{name}}</h1>
-    <div class="item-description">
-        <p id="price-{{id}}" class="item-price">{{price}}</p>
-        <p>{{description}}</p>
+    <div class="detail-container">
+        <div class="detail-image">Star</div>
+        <div class="detail-info">
+            <h2 class="detail-name">{{name}}</h2>
+            <div class="detail-price" id="current-price">{{price}}</div>
+            <div class="detail-winner" id="current-winner">Mejor postor: {{winner}}</div>
+            <p class="detail-description">{{description}}</p>
 
-        <div class="form-container">
-            <form id="offer-form" action="/api/offer" method="post">
-                <input type="hidden" name="id" value="{{id}}">
-                <label>Your name</label>
-                <input type="text" name="buyer" required>
-                <label>Amount (USD)</label>
-                <input type="number" name="amount" step="0.01" required>
-                <button class="btn" type="submit">Send offer</button>
-            </form>
+            <div class="offer-form">
+                <h3>Haz tu oferta</h3>
+                <form id="offer-form">
+                    <input type="hidden" id="item-id" value="{{id}}">
+                    <input type="text" id="bidder-name" placeholder="Tu nombre" required>
+                    <input type="number" id="offer-amount" placeholder="Monto de tu oferta" step="0.01" required>
+                    <button type="submit">Ofertar</button>
+                </form>
+            </div>
 
-            <div id="offer-success" class="hidden">Offer sent!</div>
-            <div id="offer-error" class="hidden"></div>
+            <a href="/" class="back-link">Volver a la lista</a>
         </div>
     </div>
 </div>
 
-<script src="/script.js"></script>
+<script>
+    const ws = new WebSocket('ws://localhost:4567/ws');
+    ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.type === 'updatePrice' && data.itemId === '{{id}}') {
+            document.getElementById('current-price').textContent = data.price;
+            document.getElementById('current-winner').textContent = `Mejor postor: ${data.winner}`;
+        }
+    };
+
+    document.getElementById('offer-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('bidder-name').value.trim();
+        const amount = parseFloat(document.getElementById('offer-amount').value);
+
+        if (!name || amount <= 0) return;
+
+        fetch('/api/offer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: '{{id}}',
+                amount: amount,
+                bidderName: name
+            })
+        }).then(() => {
+            document.getElementById('offer-amount').value = '';
+        });
+    });
+</script>
 </body>
 </html>

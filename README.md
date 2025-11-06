@@ -1,6 +1,6 @@
 # Java Spark Collectibles Market
 
-Challengue 6: Spring and Spring Boot in Java for Web Applications
+Challenge 6: Spring and Spring Boot in Java for Web Applications
 
 ## Project Overview
 

@@ -1,38 +1,44 @@
-Java Spark for web apps
-# Collectibles Market Web Application
+# Java Spark Collectibles Market
+
+Challengue 6: Spring and Spring Boot in Java for Web Applications
 
 ## Project Overview
-**Collectibles Market** is a 3-sprint Java web project built with **Spark Java**, **PostgreSQL**, and **WebSockets**, designed to sell and manage collectible items online.
 
-It implements a complete MVC-based architecture with RESTful endpoints, PostgreSQL persistence, dynamic Mustache templates, and real-time updates using WebSockets.
+**Java Spark Collectibles Market** is a full-stack web application developed with **Java Spark Framework**.  
+It allows users to view, filter, and purchase collectible items.  
+The system integrates with a **PostgreSQL database** and features **real-time price updates** using **WebSockets**.
 
-## Project Context
-After graduating in Systems Engineering, **Rafael** decided to apply his skills by helping his friend **Ramón**, a collector and event organizer, to sell his collectibles online.  
-The project evolved through **three sprints**, each introducing new technologies and functionalities toward a production-ready web solution.
+This project was developed in **three sprints**, each focusing on a different part of the system’s functionality.
 
-## Sprint Overview
+## Sprints Summary
 
-| **Sprint** | **Objective** | **Key Deliverables** |
-|-------------|----------------|----------------------|
-| **Sprint 1** | Set up the API and model structure. | REST API, `Item` and `Offer` models, local JSON data source. |
-| **Sprint 2** | Connect to a real PostgreSQL database. | `Database` connection, DAO layer, data persistence. |
-| **Sprint 3** | Implement filtering and real-time price updates. | `PriceWebSocketHandler`, filters, Mustache templates. |
+### **Sprint 1 — Develop Order API**
+**Objective:** Create a Java Spark application connected to PostgreSQL that manages collectible orders.
 
-## Project Architecture
+**Key Deliverables:**
+- Java Spark project setup.
+- `/orders` endpoint to create and list orders.
+- PostgreSQL database connection.
+- DAO (Data Access Object) implementation for orders.
 
+### **Sprint 2 — Frontend & Integration**
+**Objective:** Integrate the API with a web interface using Mustache templates.
 
-## User Management (API Endpoints)
+**Key Deliverables:**
+- HTML templates for items and orders.
+- `/items` endpoint rendering data from `items.json`.
+- Mustache rendering with routes for viewing item details.
+- Initial database integration for item data.
 
-| Method | Route | Function |
-| :---: | :---: | :--- |
-| **GET** | `/users` | Returns all users |
-| **GET** | `/users/:id` | Returns a specific user |
-| **POST** | `/users/:id` | Adds a new user |
-| **PUT** | `/users/:id` | Updates an existing user |
-| **OPTIONS** | `/users/:id` | Verifies if the user exists |
-| **DELETE** | `/users/:id` | Deletes a user |
+### **Sprint 3 — Filters & Real-Time Updates**
+**Objective:** Implement filtering and WebSocket-based price updates.
 
-## Project structure:
+**Key Deliverables:**
+- Price range filters for items (`min_price` and `max_price`).
+- Real-time price update notifications using WebSockets.
+- Frontend updates with `script.js` and `styles.css` integration.
+
+## Project Structure:
 ```
 java-spark-collectibles-market/
 │
@@ -60,8 +66,8 @@ java-spark-collectibles-market/
 │ │ └── items.json
 │ │
 │ └── test/
-│ └── org/example/
-│ └── AppTest.java
+|   | org/example/
+|   └── AppTest.java
 │
 ├── pom.xml
 └── README.md
@@ -69,41 +75,99 @@ java-spark-collectibles-market/
 
 ## Technologies Used
 
-| Category | Tools & Libraries |
-|-----------|------------------|
-| **Backend** | Java 17, Spark Java Framework |
-| **Database** | PostgreSQL, JDBC |
-| **Templating** | Mustache |
-| **Frontend** | HTML, CSS, JavaScript |
-| **Real-time** | WebSocket API |
-| **Data Format** | JSON (Gson) |
-| **Build Tool** | Maven |
-| **Logging** | Logback |
+| Category | Tool |
+|-----------|------|
+| Backend Framework | Java Spark 3 |
+| Template Engine | Mustache |
+| Database | PostgreSQL |
+| Real-Time Communication | WebSockets |
+| JSON Parsing | Gson |
+| Build Tool | Maven |
+| Frontend | HTML5, CSS3, JS (Mustache + jQuery) |
+
+## Installation Guide
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/your-username/java-spark-collectibles-market.git
+cd java-spark-collectibles-market
+```
+
+### 2. Configure PostgreSQL
+Create a database named `collectiblesdb` and update your credentials in `Database.java`:
+```java
+private static final String URL = "jdbc:postgresql://localhost:5432/collectiblesdb";
+private static final String USER = "postgres";
+private static final String PASSWORD = "yourpassword";
+```
+
+### 3. Install Dependencies
+```bash
+mvn clean compile
+```
+
+### 4. Run the Application
+Make sure you’re in the project root (where `pom.xml` is located):
+```bash
+mvn exec:java
+```
+
+### 5. Access in Browser
+```
+http://localhost:4567/
+```
+## API Endpoints
+
+| Method | Endpoint | Description |
+|--------|-----------|-------------|
+| `GET` | `/items` | Returns all collectible items |
+| `GET` | `/items/:id` | Returns an item by ID |
+| `GET` | `/items?min_price=X&max_price=Y` | Returns items within the price range |
+| `POST` | `/orders` | Creates a new order |
+| `WS` | `/ws` | WebSocket endpoint for real-time price updates |
 
 ## Main Classes Overview
 
-### `App.java`
-- Entry point of the application.  
-- Configures routes, templates, and WebSocket endpoints.  
-- Initializes the database connection and DAOs.
+### **App.java**
+Main entry point that initializes Spark, sets routes, and starts the web server on port `4567`.
 
-## Running the Application
-Start PostgreSQL and create the collectiblesdb database.
-Configure credentials in Database.java.
-Run the app:
+### **Item.java**
+Model representing a collectible item with `id`, `name`, `description`, and `price`.
 
-```
-mvn clean compile exec:java
-```
+### **Order.java**
+Represents an order entity, including `id`, `itemId`, and `customer info`.
 
-Access:
-In one page try:
-~~~
-Web App: http://localhost:4567
-~~~~
-In the other one try:
-~~~
-API Endpoint: http://localhost:4567/items
-~~~
+### **Database.java**
+Handles PostgreSQL connections and query execution.
 
-<img width="1902" height="869" alt="image" src="https://github.com/user-attachments/assets/eb2e2536-9a54-4101-a6d8-b4517b29fffa" />
+### **PriceWebSocketHandler.java**
+Implements WebSocket communication for updating prices in real time.
+
+### **item-detail.mustache**
+Template rendering detailed information for each collectible item.
+
+## Project Roadmap
+
+| Sprint | Focus | Duration | Deliverables |
+|--------|--------|-----------|---------------|
+| **Sprint 1** | Backend setup + Orders API | Week 1 | API connected to DB |
+| **Sprint 2** | Web UI integration | Week 2 | Mustache templates and item display |
+| **Sprint 3** | Filtering + Real-time | Week 3 | WebSocket and dynamic price updates |
+
+---
+
+## Quality Checklist
+
+- Project builds and runs successfully  
+- All endpoints respond with valid JSON  
+- PostgreSQL connection established  
+- Mustache templates render correctly  
+- WebSocket updates are real-time  
+- API documented and tested in Postman  
+- Code organized into models and views  
+- README file complete  
+
+## Final Notes
+This project demonstrates the integration of **Java Spark**, **PostgreSQL**, and **real-time WebSockets** in a clean, modular architecture suitable for small e-commerce applications.
+
+Javier David Barraza Ureña | NAOID: 3303 

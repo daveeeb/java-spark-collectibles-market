@@ -1,34 +1,84 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <meta charset="utf-8">
-    <title>{{name}}</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{name}} - Auction</title>
     <link rel="stylesheet" href="/style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 </head>
 <body>
 <div class="container">
-    <h1>{{name}}</h1>
-    <div class="item-description">
-        <p id="price-{{id}}" class="item-price">{{price}}</p>
-        <p>{{description}}</p>
+    <div class="detail-container">
+        <div class="detail-image">Collectible</div>
 
-        <div class="form-container">
-            <form id="offer-form" action="/api/offer" method="post">
-                <input type="hidden" name="id" value="{{id}}">
-                <label>Your name</label>
-                <input type="text" name="buyer" required>
-                <label>Amount (USD)</label>
-                <input type="number" name="amount" step="0.01" required>
-                <button class="btn" type="submit">Send offer</button>
-            </form>
+        <div class="detail-info">
+            <h2 class="detail-name">{{name}}</h2>
+            <div class="detail-price" id="current-price">{{price}}</div>
+            <div class="detail-winner" id="current-winner">Best bidder: {{winner}}</div>
+            <p class="detail-description">{{description}}</p>
 
-            <div id="offer-success" class="hidden">Offer sent!</div>
-            <div id="offer-error" class="hidden"></div>
+            <div class="offer-form">
+                <h3>Place your bid</h3>
+                <form id="offer-form">
+                    <input type="hidden" id="item-id" value="{{id}}">
+                    <input type="text" id="bidder-name" placeholder="Your name" required>
+                    <input type="number" id="offer-amount" placeholder="Your offer amount" step="0.01" required>
+                    <button type="submit">Submit Bid</button>
+                </form>
+            </div>
+
+            <a href="/" class="back-link">Back to list</a>
         </div>
     </div>
 </div>
 
-<script src="/script.js"></script>
+<script>
+    /**
+     * ===============================
+     *  WebSocket for live updates
+     * ===============================
+     * Listens for price and bidder updates from the server.
+     */
+    const ws = new WebSocket('ws://localhost:4567/ws');
+
+    ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+
+        // Update only if the message belongs to this item
+        if (data.type === 'updatePrice' && data.itemId === '{{id}}') {
+            document.getElementById('current-price').textContent = data.price;
+            document.getElementById('current-winner').textContent = `Best bidder: ${data.winner || "No bids yet"}`;
+        }
+    };
+
+    document.getElementById('offer-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const name = document.getElementById('bidder-name').value.trim();
+        const amount = parseFloat(document.getElementById('offer-amount').value);
+
+        if (!name || amount <= 0) {
+            alert("Please enter a valid name and amount.");
+            return;
+        }
+
+        fetch('/api/offer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: '{{id}}',
+                amount: amount,
+                bidderName: name
+            })
+        })
+                .then(() => {
+                    document.getElementById('offer-amount').value = '';
+                    alert("✅ Your bid was submitted successfully!");
+                })
+                .catch(() => {
+                    alert("⚠️ There was an error submitting your bid.");
+                });
+    });
+</script>
 </body>
 </html>

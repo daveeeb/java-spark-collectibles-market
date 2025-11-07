@@ -9,22 +9,43 @@ import spark.template.mustache.MustacheTemplateEngine;
 import java.util.*;
 import static spark.Spark.*;
 
+/**
+ * Main entry point of the Collectibles Market web application.
+ * <p>
+ * This class configures the Spark Java server, sets up HTTP routes, initializes
+ * the WebSocket handler, defines REST API endpoints, and renders web views
+ * using Mustache templates. It also handles in-memory collections of items and offers.
+ */
 public class App {
+    /** In-memory list of collectible items available in the marketplace. */
     private static final List<Item> items = new ArrayList<>();
+
+    /** In-memory list of offers made by users. */
     private static final List<Offer> offers = new ArrayList<>();
+
+    /** Gson instance used for JSON serialization and deserialization. */
     private static final Gson gson = new Gson();
+
+    /** Mustache template engine used to render HTML views. */
     private static final MustacheTemplateEngine mustache = new MustacheTemplateEngine();
 
+    /**
+     * Main method that starts the Spark web application.
+     * <p>
+     * This method sets the server port, static file location, WebSocket route,
+     * API routes, and web routes for rendering views.
+     *
+     * @param args Command-line arguments (not used)
+     */
     public static void main(String[] args) {
         port(4567);
         staticFiles.location("/public");
         loadItems();
 
-        // Registrar WebSocket (handler con anotaciones Jetty)
         webSocket("/ws", PriceWebSocketHandler.class);
-        init(); // iniciar Spark (necesario cuando se usan websockets)
+        init();
 
-        // Manejo de errores
+        // Error handlers
         notFound((req, res) -> {
             res.type("application/json");
             return gson.toJson(Map.of("error", "404"));
@@ -34,7 +55,13 @@ public class App {
             return gson.toJson(Map.of("error", "500"));
         });
 
-        // API: obtener items (con filtrado por rango de precio)
+        /**
+         * GET /items
+         * <p>
+         * Returns all items in JSON format.
+         * Supports optional filtering by price range using query parameters
+         * `min_price` and `max_price`.
+         */
         get("/items", (req, res) -> {
             res.type("application/json");
             String minStr = req.queryParams("min_price");
@@ -48,7 +75,7 @@ public class App {
                     if (minStr != null && !minStr.isBlank()) min = Double.parseDouble(minStr);
                     if (maxStr != null && !maxStr.isBlank()) max = Double.parseDouble(maxStr);
                 } catch (NumberFormatException e) {
-                    // si hay error de parseo, devolvemos todos (o podrías devolver 400)
+                    // If parsing fails, return all items (or could respond with 400)
                 }
 
                 final double fmin = min;
@@ -62,21 +89,27 @@ public class App {
                         .toList();
             }
 
-            // Enviar campos necesarios al cliente
+            // Build JSON payload
             List<Map<String, Object>> payload = new ArrayList<>();
             for (Item i : filtered) {
                 Map<String, Object> m = new HashMap<>();
                 m.put("id", i.getId());
                 m.put("name", i.getName());
                 m.put("price", i.getPrice()); // string
-                m.put("priceAmount", parsePrice(i.getPrice())); // número
+                m.put("priceAmount", parsePrice(i.getPrice())); // numeric
                 payload.add(m);
             }
 
             return gson.toJson(payload);
         });
 
-        // Endpoint para recibir ofertas (API)
+        /**
+         * POST /api/offer
+         * <p>
+         * Receives an offer from a client as JSON.
+         * If the offer is higher than the item's current price, updates the item price
+         * and broadcasts the change to all WebSocket clients in real time.
+         */
         post("/api/offer", (req, res) -> {
             res.type("application/json");
             Offer offer = gson.fromJson(req.body(), Offer.class);
@@ -91,14 +124,17 @@ public class App {
                 double newAmount = offer.getAmount();
                 String newPriceString = String.format("$%.2f USD", newAmount);
                 item.setPrice(newPriceString);
-                PriceWebSocketHandler.broadcastPriceUpdate(offer.getId(), newAmount, newPriceString);
+                PriceWebSocketHandler.broadcastPriceUpdate(offer.getId(), newAmount, newPriceString, offer.getBidderName());
             }
-
             res.status(201);
             return gson.toJson(Map.of("message", "Oferta recibida"));
         });
 
-        // Rutas renderizadas (web)
+        /**
+         * GET /
+         * <p>
+         * Renders the home page showing the list of all items with their current prices.
+         */
         get("/", (req, res) -> {
             Map<String, Object> model = new HashMap<>();
             List<Map<String, Object>> viewItems = new ArrayList<>();
@@ -114,6 +150,12 @@ public class App {
             return mustache.render(new ModelAndView(model, "items.mustache"));
         });
 
+        /**
+         * GET /items/:id
+         * <p>
+         * Displays the detail page for a specific item identified by ID.
+         * If the item is not found, returns a 404 error.
+         */
         get("/items/:id", (req, res) -> {
             String id = req.params(":id");
             return items.stream()
@@ -135,6 +177,12 @@ public class App {
         });
     }
 
+    /**
+     * Parses a price string (e.g., "$120.00 USD") into a numeric double value.
+     *
+     * @param priceStr String representation of the price
+     * @return Parsed double value, or 0 if parsing fails
+     */
     private static double parsePrice(String priceStr) {
         if (priceStr == null) return 0;
         try {
@@ -144,6 +192,11 @@ public class App {
         }
     }
 
+    /**
+     * Loads the initial list of items into memory.
+     * This method clears the current list and prepares it for initialization.
+     * (Currently empty, should be populated with demo or database data.)
+     */
     private static void loadItems() {
         items.clear();
         items.add(new Item("item1", "Gorra autografiada por Peso Pluma", "Una gorra autografiada por el famoso Peso Pluma.", "$621.34 USD"));

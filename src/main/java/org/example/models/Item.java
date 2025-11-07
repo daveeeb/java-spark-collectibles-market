@@ -1,13 +1,24 @@
 package org.example.models;
 
+/**
+ * Represents an item in the collectibles market.
+ * <p>
+ * Used for displaying and handling collectible item data such as name, description, and price.
+ */
 public class Item {
     private String id;
     private String name;
     private String description;
-    private String price; // formato: "$123.45 USD"
+    private String price;
 
-    public Item() {}
-
+    /**
+     * Constructs an {@link Item} object.
+     *
+     * @param id          unique identifier of the item
+     * @param name        name of the collectible item
+     * @param description textual description of the item
+     * @param price       price string (formatted as currency)
+     */
     public Item(String id, String name, String description, String price) {
         this.id = id;
         this.name = name;
@@ -15,7 +26,6 @@ public class Item {
         this.price = price;
     }
 
-    // getters y setters
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 

@@ -1,45 +1,95 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <meta charset="utf-8">
-    <title>Collectibles Market</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collectibles Auction</title>
     <link rel="stylesheet" href="/style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/4.2.0/mustache.min.js"></script>
 </head>
 <body>
 <div class="container">
-    <h1>Collectibles Market</h1>
+    <header>
+        <h1>Collectibles Auction</h1>
+        <p>Bid on your favorite items!</p>
+    </header>
 
-    <div class="form-container">
-        <form id="filter-form">
-            <label>Min price (USD)</label>
-            <input id="min-price" name="min_price" type="number" step="0.01" placeholder="0">
-            <label>Max price (USD)</label>
-            <input id="max-price" name="max_price" type="number" step="0.01" placeholder="1000">
-            <button class="btn" type="submit">Filter</button>
-            <button id="clear-filter" class="btn" type="button">Clear</button>
-        </form>
+    <div class="filters">
+        <input type="number" id="min-price" placeholder="Minimum price" step="0.01">
+        <input type="number" id="max-price" placeholder="Maximum price" step="0.01">
+        <button onclick="applyFilters()">Filter</button>
+        <button onclick="clearFilters()">Clear</button>
     </div>
 
-    <div id="item-list" class="item-list">
+    <div class="items-grid" id="items-container">
         {{#items}}
-            <div class="item" onclick="location.href='/items/{{id}}'">
-                <h3>{{name}}</h3>
-                <p id="price-{{id}}" class="item-price">{{price}}</p>
+            <div class="item-card">
+                <div class="item-image">Collectible</div>
+                <div class="item-info">
+                    <div class="item-name">{{name}}</div>
+                    <div class="item-price" id="price-{{id}}">{{price}}</div>
+                    <a href="/items/{{id}}" class="btn">View Details</a>
+                </div>
             </div>
         {{/items}}
     </div>
 </div>
 
-<!-- Template for rendering via JS -->
-<script id="item-template" type="x-tmpl-mustache">
-    <div class="item" data-id="{{id}}">
-      <h3>{{name}}</h3>
-      <p id="price-{{id}}" class="item-price">{{price}}</p>
-    </div>
-</script>
+<script>
+    /**
+     * Applies filters based on min and max price inputs.
+     */
+    function applyFilters() {
+        const min = document.getElementById('min-price').value;
+        const max = document.getElementById('max-price').value;
+        const url = new URL('/items', window.location.origin);
 
-<script src="/script.js"></script>
+        if (min) url.searchParams.set('min_price', min);
+        if (max) url.searchParams.set('max_price', max);
+
+        fetch(url)
+                .then(r => r.json())
+                .then(data => {
+                    const container = document.getElementById('items-container');
+                    container.innerHTML = data.map(item => `
+                    <div class="item-card">
+                        <div class="item-image">Collectible</div>
+                        <div class="item-info">
+                            <div class="item-name">${item.name}</div>
+                            <div class="item-price" id="price-${item.id}">${item.price}</div>
+                            <div class="item-winner" id="winner-${item.id}">Best bidder: ${item.winner || "No bids yet"}</div>
+                            <a href="/items/${item.id}" class="btn">View Details</a>
+                        </div>
+                    </div>
+                `).join('');
+                })
+                .catch(() => alert("⚠️ Error loading filtered items."));
+    }
+
+    /**
+     * Clears filters and reloads all items.
+     */
+    function clearFilters() {
+        document.getElementById('min-price').value = '';
+        document.getElementById('max-price').value = '';
+        location.reload();
+    }
+
+    /**
+     * WebSocket connection for live price and bidder updates.
+     */
+    const ws = new WebSocket('ws://localhost:4567/ws');
+
+    ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+
+        if (data.type === 'updatePrice') {
+            const priceEl = document.getElementById(`price-${data.itemId}`);
+            const winnerEl = document.getElementById(`winner-${data.itemId}`);
+
+            if (priceEl) priceEl.textContent = data.price;
+            if (winnerEl) winnerEl.textContent = `Best bidder: ${data.winner || "No bids yet"}`;
+        }
+    };
+</script>
 </body>
 </html>

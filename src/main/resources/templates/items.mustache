@@ -1,24 +1,23 @@
-<!-- src/main/resources/public/items.mustache -->
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Subasta de Coleccionables</title>
+    <title>Collectibles Auction</title>
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
 <div class="container">
     <header>
-        <h1>Subasta de Coleccionables</h1>
-        <p>¡Oferta por tus ítems favoritos!</p>
+        <h1>Collectibles Auction</h1>
+        <p>Bid on your favorite items!</p>
     </header>
 
     <div class="filters">
-        <input type="number" id="min-price" placeholder="Precio mínimo" step="0.01">
-        <input type="number" id="max-price" placeholder="Precio máximo" step="0.01">
-        <button onclick="applyFilters()">Filtrar</button>
-        <button onclick="clearFilters()">Limpiar</button>
+        <input type="number" id="min-price" placeholder="Minimum price" step="0.01">
+        <input type="number" id="max-price" placeholder="Maximum price" step="0.01">
+        <button onclick="applyFilters()">Filter</button>
+        <button onclick="clearFilters()">Clear</button>
     </div>
 
     <div class="items-grid" id="items-container">
@@ -28,8 +27,7 @@
                 <div class="item-info">
                     <div class="item-name">{{name}}</div>
                     <div class="item-price" id="price-{{id}}">{{price}}</div>
-                    <div class="item-winner" id="winner-{{id}}">Mejor postor: {{winner}}</div>
-                    <a href="/items/{{id}}" class="btn">Ver Detalle</a>
+                    <a href="/items/{{id}}" class="btn">View Details</a>
                 </div>
             </div>
         {{/items}}
@@ -37,10 +35,14 @@
 </div>
 
 <script>
+    /**
+     * Applies filters based on min and max price inputs.
+     */
     function applyFilters() {
         const min = document.getElementById('min-price').value;
         const max = document.getElementById('max-price').value;
         const url = new URL('/items', window.location.origin);
+
         if (min) url.searchParams.set('min_price', min);
         if (max) url.searchParams.set('max_price', max);
 
@@ -49,33 +51,43 @@
                 .then(data => {
                     const container = document.getElementById('items-container');
                     container.innerHTML = data.map(item => `
-                        <div class="item-card">
-                            <div class="item-image">Collectible</div>
-                            <div class="item-info">
-                                <div class="item-name">${item.name}</div>
-                                <div class="item-price" id="price-${item.id}">${item.price}</div>
-                                <div class="item-winner" id="winner-${item.id}">Mejor postor: ${item.winner}</div>
-                                <a href="/items/${item.id}" class="btn">Ver Detalle</a>
-                            </div>
+                    <div class="item-card">
+                        <div class="item-image">Collectible</div>
+                        <div class="item-info">
+                            <div class="item-name">${item.name}</div>
+                            <div class="item-price" id="price-${item.id}">${item.price}</div>
+                            <div class="item-winner" id="winner-${item.id}">Best bidder: ${item.winner || "No bids yet"}</div>
+                            <a href="/items/${item.id}" class="btn">View Details</a>
                         </div>
-                    `).join('');
-                });
+                    </div>
+                `).join('');
+                })
+                .catch(() => alert("⚠️ Error loading filtered items."));
     }
 
+    /**
+     * Clears filters and reloads all items.
+     */
     function clearFilters() {
         document.getElementById('min-price').value = '';
         document.getElementById('max-price').value = '';
         location.reload();
     }
 
+    /**
+     * WebSocket connection for live price and bidder updates.
+     */
     const ws = new WebSocket('ws://localhost:4567/ws');
+
     ws.onmessage = (event) => {
         const data = JSON.parse(event.data);
+
         if (data.type === 'updatePrice') {
             const priceEl = document.getElementById(`price-${data.itemId}`);
             const winnerEl = document.getElementById(`winner-${data.itemId}`);
+
             if (priceEl) priceEl.textContent = data.price;
-            if (winnerEl) winnerEl.textContent = `Mejor postor: ${data.winner}`;
+            if (winnerEl) winnerEl.textContent = `Best bidder: ${data.winner || "No bids yet"}`;
         }
     };
 </script>

@@ -6,8 +6,18 @@ import org.example.models.Order;
 import java.sql.*;
 import java.util.*;
 
+/**
+ * Data Access Object (DAO) for performing CRUD operations on the "orders" table.
+ * <p>
+ * Provides methods to retrieve and create orders from the database.
+ */
 public class OrderDao {
 
+    /**
+     * Retrieves all orders from the database.
+     *
+     * @return a list of {@link Order} objects representing all existing orders
+     */
     public List<Order> getAllOrders() {
         List<Order> orders = new ArrayList<>();
         try (Connection conn = Database.getConnection();
@@ -30,6 +40,11 @@ public class OrderDao {
         return orders;
     }
 
+    /**
+     * Inserts a new order record into the database.
+     *
+     * @param order the {@link Order} object containing order details to be saved
+     */
     public void createOrder(Order order) {
         try (Connection conn = Database.getConnection();
              PreparedStatement stmt = conn.prepareStatement(
